@@ -1,0 +1,9 @@
+{
+  "name": "Akamai",
+  "jwt": "ToDo",
+  "region": {
+    "us": "ToDo",
+    "eu": "ToDo",
+    "apjc": "ToDo"
+  }
+}
