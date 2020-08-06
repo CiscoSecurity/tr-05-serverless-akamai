@@ -1,8 +1,11 @@
 from datetime import datetime
+from http import HTTPStatus
+from unittest.mock import MagicMock
 
 from authlib.jose import jwt
 from pytest import fixture
 
+from api.errors import PERMISSION_DENIED
 from app import app
 
 
@@ -26,7 +29,12 @@ def client(secret_key):
 def valid_jwt(client):
     header = {'alg': 'HS256'}
 
-    payload = {'username': 'gdavoian', 'superuser': False}
+    payload = {
+        'clientToken': 'xxx',
+        'clientSecret': 'xxx',
+        'accessToken': 'xxx',
+        'baseUrl': 'xxx',
+    }
 
     secret_key = client.application.secret_key
 
@@ -53,3 +61,58 @@ def invalid_jwt(valid_jwt):
     payload = jwt_encode(payload)
 
     return '.'.join([header, payload, signature])
+
+
+def akamai_api_error_mock(status_code, text=None, json_=None):
+    mock_response = MagicMock()
+
+    mock_response.status_code = status_code
+    mock_response.ok = status_code == HTTPStatus.OK
+
+    mock_response.text = text
+    mock_response.json = json_
+
+    return mock_response
+
+
+@fixture(scope='session')
+def akamai_response_unauthorized_creds(secret_key):
+    return akamai_api_error_mock(
+        HTTPStatus.FORBIDDEN,
+        json_=lambda: {'detail': 'Error: Bad API key'}
+    )
+
+
+@fixture(scope='session')
+def akamai_response_ok(secret_key):
+    return akamai_api_error_mock(
+        HTTPStatus.OK
+    )
+
+
+@fixture(scope='module')
+def invalid_jwt_expected_payload():
+    return {
+            'errors': [
+                {
+                    'code': PERMISSION_DENIED,
+                    'message': 'Invalid Authorization Bearer JWT.',
+                    'type': 'fatal'}
+            ],
+            'data': {}
+        }
+
+
+@fixture(scope='module')
+def unauthorized_creds_expected_payload():
+    return {
+        'errors': [
+            {
+                'code': PERMISSION_DENIED,
+                'message': 'Unexpected response from Akamai:'
+                           ' Error: Bad API key',
+                'type': 'fatal'
+            }
+        ],
+        'data': {}
+    }
