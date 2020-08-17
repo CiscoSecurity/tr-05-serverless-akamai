@@ -63,7 +63,7 @@ def invalid_jwt(valid_jwt):
     return '.'.join([header, payload, signature])
 
 
-def akamai_api_error_mock(status_code, text=None, json_=None):
+def akamai_api_response_mock(status_code, text=None, json_=None):
     mock_response = MagicMock()
 
     mock_response.status_code = status_code
@@ -77,7 +77,7 @@ def akamai_api_error_mock(status_code, text=None, json_=None):
 
 @fixture(scope='session')
 def akamai_response_unauthorized_creds(secret_key):
-    return akamai_api_error_mock(
+    return akamai_api_response_mock(
         HTTPStatus.FORBIDDEN,
         json_=lambda: {'detail': 'Error: Bad API key'}
     )
@@ -85,8 +85,9 @@ def akamai_response_unauthorized_creds(secret_key):
 
 @fixture(scope='session')
 def akamai_response_ok(secret_key):
-    return akamai_api_error_mock(
-        HTTPStatus.OK
+    return akamai_api_response_mock(
+        HTTPStatus.OK,
+        json_=lambda: 'OK'
     )
 
 
