@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from urllib.parse import urljoin, urlencode
+from urllib.parse import urljoin
 
 import requests
 from akamai.edgegrid import EdgeGridAuth
@@ -31,6 +31,23 @@ class AkamaiClient:
         params = {'listType': 'IP', 'includeElements': include_elements}
         return self._request('/network-list/v2/network-lists', params=params)
 
+    def remove_from_network_list(self, network_list_id, observable_value):
+        return self._modify_network_list(
+            'DELETE', network_list_id, observable_value
+        )
+
+    def add_to_network_list(self, network_list_id, observable_value):
+        return self._modify_network_list(
+            'PUT', network_list_id, observable_value
+        )
+
+    def _modify_network_list(self, method, network_list_id, observable_value):
+        return self._request(
+            f'/network-list/v2/network-lists/{network_list_id}/elements',
+            method=method,
+            params={'element': observable_value}
+        )
+
     def _request(self, path, method='GET', params=None):
         url = urljoin(f'https://{self.base_url}', path)
 
@@ -40,8 +57,5 @@ class AkamaiClient:
 
         if response.ok:
             return response.json()
-
-        if response.status_code in NOT_CRITICAL_ERRORS:
-            return {}
 
         raise CriticalAkamaiResponseError(response)

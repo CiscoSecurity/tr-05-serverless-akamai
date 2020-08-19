@@ -10,3 +10,8 @@ class Config:
 
     USER_AGENT = ('Cisco Threat Response Integrations '
                   '<tr-integrations-support@cisco.com>')
+
+    AKAMAI_OBSERVABLES = {
+        'ip': 'IP',
+        'ipv6': 'IPv6'
+    }

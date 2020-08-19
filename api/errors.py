@@ -50,6 +50,7 @@ class CriticalAkamaiResponseError(TRFormattedError):
             HTTPStatus.FORBIDDEN: PERMISSION_DENIED,
             HTTPStatus.NOT_FOUND: NOT_FOUND,
             HTTPStatus.CONFLICT: STATE_CONFLICT,
+            HTTPStatus.UNPROCESSABLE_ENTITY: INVALID_ARGUMENT,
             HTTPStatus.INTERNAL_SERVER_ERROR: UNKNOWN,
 
         }

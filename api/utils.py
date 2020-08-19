@@ -48,10 +48,17 @@ def jsonify_data(data):
 def jsonify_result():
     result = {'data': {}}
 
+    if g.status:
+        result['data']['status'] = g.status
+
     if g.get('errors'):
         result['errors'] = g.errors
 
     return jsonify(result)
+
+
+def add_status(status):
+    g.status = status
 
 
 def add_error(error):

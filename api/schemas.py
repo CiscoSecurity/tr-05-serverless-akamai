@@ -78,6 +78,10 @@ class ActionFormParamsSchema(Schema):
         validate=validate_string,
         required=True,
     )
+    network_list_id = fields.String(
+        validate=validate_string,
+        required=True,
+    )
 
     class Meta:
         unknown = INCLUDE
