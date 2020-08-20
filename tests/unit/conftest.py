@@ -63,6 +63,15 @@ def invalid_jwt(valid_jwt):
     return '.'.join([header, payload, signature])
 
 
+@fixture(scope='session')
+def akamai_call_headers():
+    return {
+        'Accept': 'application/json',
+        'User-Agent': 'Cisco Threat Response Integrations'
+                      ' <tr-integrations-support@cisco.com>'
+    }
+
+
 def akamai_api_response_mock(status_code, text=None, json_=None):
     mock_response = MagicMock()
 
@@ -95,7 +104,28 @@ def akamai_response_ok(secret_key):
 def akamai_response_network_lists(secret_key):
     return akamai_api_response_mock(
         HTTPStatus.OK,
-        json_=lambda: {'links': [], 'networkLists': []}
+        json_=lambda: {
+            'links': [],
+            'networkLists': [
+                {
+                    'readOnly': True,
+                    'uniqueId': 'A',
+                    'name': 'A',
+                    'list': []
+                },
+                {
+                    'readOnly': False,
+                    'uniqueId': 'B',
+                    'name': 'B',
+                    'list': ['1.1.1.1']
+                },
+                {
+                    'uniqueId': 'C',
+                    'name': 'C',
+                    'list': ['2.2.2.2']
+                }
+            ]
+        }
     )
 
 
@@ -106,14 +136,14 @@ def invalid_jwt_expected_payload(route):
         data = {'status': 'failure'}
 
     return {
-            'errors': [
-                {
-                    'code': PERMISSION_DENIED,
-                    'message': 'Invalid Authorization Bearer JWT.',
-                    'type': 'fatal'}
-            ],
-            'data': data
-        }
+        'errors': [
+            {
+                'code': PERMISSION_DENIED,
+                'message': 'Invalid Authorization Bearer JWT.',
+                'type': 'fatal'}
+        ],
+        'data': data
+    }
 
 
 @fixture(scope='module')
@@ -128,4 +158,38 @@ def unauthorized_creds_expected_payload():
             }
         ],
         'data': {}
+    }
+
+
+@fixture(scope='module')
+def respond_observables_expected_payload():
+    return {
+        "data": [
+            {
+                "categories": [
+                    "Akamai"
+                ],
+                "description": "Remove IP from Network List",
+                "id": "akamai-remove-from-network-list",
+                "query-params": {
+                    "network_list_id": "B",
+                    "observable_type": "ip",
+                    "observable_value": "1.1.1.1"
+                },
+                "title": "Remove from B"
+            },
+            {
+                "categories": [
+                    "Akamai"
+                ],
+                "description": "Add IP to Network List",
+                "id": "akamai-add-to-network-list",
+                "query-params": {
+                    "network_list_id": "C",
+                    "observable_type": "ip",
+                    "observable_value": "1.1.1.1"
+                },
+                "title": "Add to C"
+            }
+        ]
     }
