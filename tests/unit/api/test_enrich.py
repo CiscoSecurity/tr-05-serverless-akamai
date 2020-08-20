@@ -18,7 +18,7 @@ def route(request):
 
 @fixture(scope='module')
 def valid_json():
-    return [{'type': 'domain', 'value': 'cisco.com'}]
+    return [{'type': 'ip', 'value': '1.1.1.1'}]
 
 
 def test_enrich_call_success(route, client, valid_jwt, valid_json):
