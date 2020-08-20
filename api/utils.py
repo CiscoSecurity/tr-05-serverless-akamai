@@ -48,7 +48,7 @@ def jsonify_data(data):
 def jsonify_result():
     result = {'data': {}}
 
-    if g.status:
+    if g.get('status'):
         result['data']['status'] = g.status
 
     if g.get('errors'):

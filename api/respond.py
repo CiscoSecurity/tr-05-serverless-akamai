@@ -20,8 +20,10 @@ REMOVE_ACTION_ID = 'akamai-remove-from-network-list'
 
 @respond_api.route('/respond/observables', methods=['POST'])
 def respond_observables():
+    type_name_map = current_app.config['AKAMAI_OBSERVABLES']
+
     observables = get_observables()
-    observables = [ob for ob in observables if ob['type'] in ('ip', 'ipv6')]
+    observables = [ob for ob in observables if ob['type'] in type_name_map]
 
     credentials = get_jwt()
     client = AkamaiClient(credentials, current_app.config['USER_AGENT'])
@@ -30,8 +32,6 @@ def respond_observables():
     network_lists = [
         nl for nl in network_lists if nl.get('readOnly', False) is False
     ]
-
-    type_name_map = current_app.config['AKAMAI_OBSERVABLES']
 
     def action(
         id_, title_template, description_template, observable, network_list

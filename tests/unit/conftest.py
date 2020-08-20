@@ -91,8 +91,20 @@ def akamai_response_ok(secret_key):
     )
 
 
+@fixture(scope='session')
+def akamai_response_network_lists(secret_key):
+    return akamai_api_response_mock(
+        HTTPStatus.OK,
+        json_=lambda: {'links': [], 'networkLists': []}
+    )
+
+
 @fixture(scope='module')
-def invalid_jwt_expected_payload():
+def invalid_jwt_expected_payload(route):
+    data = {}
+    if route.endswith('/trigger'):
+        data = {'status': 'failure'}
+
     return {
             'errors': [
                 {
@@ -100,7 +112,7 @@ def invalid_jwt_expected_payload():
                     'message': 'Invalid Authorization Bearer JWT.',
                     'type': 'fatal'}
             ],
-            'data': {}
+            'data': data
         }
 
 
