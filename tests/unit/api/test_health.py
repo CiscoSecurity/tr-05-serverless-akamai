@@ -39,7 +39,7 @@ def test_health_call_with_unauthorized_creds_failure(
         akamai_response_unauthorized_creds,
         unauthorized_creds_expected_payload,
 ):
-    with patch.object(Session, 'get') as get_mock:
+    with patch.object(Session, 'request') as get_mock:
         get_mock.return_value = akamai_response_unauthorized_creds
         response = client.post(
             route, headers=headers(valid_jwt)
@@ -50,7 +50,7 @@ def test_health_call_with_unauthorized_creds_failure(
 
 
 def test_health_call_success(route, client, valid_jwt, akamai_response_ok):
-    with patch.object(Session, 'get') as get_mock:
+    with patch.object(Session, 'request') as get_mock:
         get_mock.return_value = akamai_response_ok
         response = client.post(route, headers=headers(valid_jwt))
 
