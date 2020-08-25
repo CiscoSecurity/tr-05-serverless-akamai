@@ -1,6 +1,11 @@
 {
   "name": "Akamai",
-  "jwt": "ToDo",
+  "jwt": {
+    "baseURL": "Base URL",
+    "accessToken": "Access Token",
+    "clientToken": "Client Token",
+    "clientSecret": "Client Secret"
+  },
   "region": {
     "us": "ToDo",
     "eu": "ToDo",
