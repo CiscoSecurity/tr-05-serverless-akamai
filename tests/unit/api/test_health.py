@@ -4,7 +4,7 @@ from unittest.mock import patch
 from pytest import fixture
 from requests import Session
 
-from .utils import headers
+from .utils import headers, check_akamai_request
 
 
 def routes():
@@ -39,20 +39,28 @@ def test_health_call_with_unauthorized_creds_failure(
         akamai_response_unauthorized_creds,
         unauthorized_creds_expected_payload,
 ):
-    with patch.object(Session, 'request') as get_mock:
-        get_mock.return_value = akamai_response_unauthorized_creds
+    with patch.object(Session, 'request') as request_mock:
+        request_mock.return_value = akamai_response_unauthorized_creds
+
         response = client.post(
             route, headers=headers(valid_jwt)
         )
 
         assert response.status_code == HTTPStatus.OK
         assert response.json == unauthorized_creds_expected_payload
+        check_akamai_request(
+            request_mock, {'listType': 'IP', 'includeElements': False}
+        )
 
 
 def test_health_call_success(route, client, valid_jwt, akamai_response_ok):
-    with patch.object(Session, 'request') as get_mock:
-        get_mock.return_value = akamai_response_ok
+    with patch.object(Session, 'request') as request_mock:
+        request_mock.return_value = akamai_response_ok
+
         response = client.post(route, headers=headers(valid_jwt))
 
         assert response.status_code == HTTPStatus.OK
         assert response.json == {'data': {'status': 'ok'}}
+        check_akamai_request(
+            request_mock, {'listType': 'IP', 'includeElements': False}
+        )
