@@ -75,7 +75,7 @@ def respond_observables():
     for observable in observables:
         for network_list in network_lists:
 
-            if observable['value'] in network_list['list']:
+            if observable['value'] in network_list.get('list', []):
                 actions.append(remove_from(observable, network_list))
             else:
                 actions.append(add_to(observable, network_list))
