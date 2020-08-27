@@ -1,7 +1,7 @@
 {
   "name": "Akamai",
   "jwt": {
-    "baseURL": "Base URL",
+    "baseUrl": "Base URL",
     "accessToken": "Access Token",
     "clientToken": "Client Token",
     "clientSecret": "Client Secret"
