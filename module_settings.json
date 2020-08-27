@@ -7,8 +7,8 @@
     "clientSecret": "Client Secret"
   },
   "region": {
-    "us": "ToDo",
-    "eu": "ToDo",
-    "apjc": "ToDo"
+    "us": "30b82760-96ba-4786-89f9-fb06f786d438",
+    "eu": "929c8930-2824-4fbc-9ebb-31ab6b82075b",
+    "apjc": "35fb6675-5b74-47b4-838e-556491d0a8db"
   }
 }
