@@ -237,7 +237,7 @@ header set to `Bearer <JWT>`.
   - Verifies the Authorization Bearer JWT and decodes it to restore the
   original credentials.
   - Makes a series of requests to the underlying external service to query for
-  actions available for given Observables.
+  actions available for given observables.
   - Returns a list of those actions.
 
 - `POST /respond/trigger`
