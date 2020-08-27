@@ -244,7 +244,7 @@ header set to `Bearer <JWT>`.
   - Accepts an observable and an action.
   - Verifies the Authorization Bearer JWT and decodes it to restore the
   original credentials.
-  - Trigger an action at the underlying external service.
+  - Triggers an action at the underlying external service.
   - Returns an action result.
 
 ### Supported Types of Observables
