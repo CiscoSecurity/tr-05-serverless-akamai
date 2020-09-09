@@ -1,9 +1,10 @@
 from collections import namedtuple
 from http import HTTPStatus
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 
 from pytest import fixture
 from requests import Session
+from requests.exceptions import SSLError
 
 from api.errors import INVALID_ARGUMENT
 from api.respond import ADD_ACTION_ID, REMOVE_ACTION_ID
@@ -26,7 +27,7 @@ def valid_json(route):
         return [{'type': 'ip', 'value': '1.1.1.1'}]
 
     if route.endswith('/trigger'):
-        return {'action-id': 'valid-action-id',
+        return {'action-id': ADD_ACTION_ID,
                 'observable_type': 'ip',
                 'observable_value': '1.1.1.1',
                 'network_list_id': 'nli'}
@@ -85,6 +86,25 @@ def test_respond_call_with_valid_jwt_but_invalid_json_failure(
 
     assert response.status_code == HTTPStatus.OK
     assert response.json == invalid_json_expected_payload
+
+
+def test_respond_call_with_ssl_error(
+        route, client, valid_jwt, valid_json,
+        sslerror_expected_payload
+):
+    with patch.object(Session, 'request') as request_mock:
+        mock_exception = MagicMock()
+        mock_exception.reason.args.__getitem__().verify_message \
+            = 'self signed certificate'
+        request_mock.side_effect = SSLError(mock_exception)
+
+        response = client.post(
+            route, headers=headers(valid_jwt),
+            json=valid_json
+        )
+
+        assert response.status_code == HTTPStatus.OK
+        assert response.json == sslerror_expected_payload
 
 
 def test_respond_observables_call_success(
