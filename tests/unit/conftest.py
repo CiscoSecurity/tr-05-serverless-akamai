@@ -123,6 +123,16 @@ def akamai_response_network_lists(secret_key):
                     'uniqueId': 'C',
                     'name': 'C',
                     'list': ['2.2.2.2']
+                },
+                {
+                    'uniqueId': 'D',
+                    'name': 'D',
+                    'list': ['2.2.2.2']
+                },
+                {
+                    'uniqueId': 'F',
+                    'name': 'F',
+                    'list': ['1.1.1.1']
                 }
             ]
         }
@@ -169,6 +179,32 @@ def respond_observables_expected_payload():
                 "categories": [
                     "Akamai"
                 ],
+                "description": "Add IP to Network List",
+                "id": "akamai-add-to-network-list",
+                "query-params": {
+                    "network_list_id": "C",
+                    "observable_type": "ip",
+                    "observable_value": "1.1.1.1"
+                },
+                "title": "Add to C"
+            },
+            {
+                "categories": [
+                    "Akamai"
+                ],
+                "description": "Add IP to Network List",
+                "id": "akamai-add-to-network-list",
+                "query-params": {
+                    "network_list_id": "D",
+                    "observable_type": "ip",
+                    "observable_value": "1.1.1.1"
+                },
+                "title": "Add to D"
+            },
+            {
+                "categories": [
+                    "Akamai"
+                ],
                 "description": "Remove IP from Network List",
                 "id": "akamai-remove-from-network-list",
                 "query-params": {
@@ -182,14 +218,14 @@ def respond_observables_expected_payload():
                 "categories": [
                     "Akamai"
                 ],
-                "description": "Add IP to Network List",
-                "id": "akamai-add-to-network-list",
+                "description": "Remove IP from Network List",
+                "id": "akamai-remove-from-network-list",
                 "query-params": {
-                    "network_list_id": "C",
+                    "network_list_id": "F",
                     "observable_type": "ip",
                     "observable_value": "1.1.1.1"
                 },
-                "title": "Add to C"
+                "title": "Remove from F"
             }
         ]
     }
