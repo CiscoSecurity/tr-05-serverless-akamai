@@ -3,11 +3,12 @@ from urllib.parse import urljoin
 
 import requests
 from akamai.edgegrid import EdgeGridAuth
+from requests.exceptions import SSLError
 
 from api.errors import (
-    CriticalAkamaiResponseError
+    CriticalAkamaiResponseError,
 
-)
+    AkamaiSSLError)
 
 NOT_CRITICAL_ERRORS = (HTTPStatus.BAD_REQUEST, HTTPStatus.NOT_FOUND)
 
@@ -51,9 +52,12 @@ class AkamaiClient:
     def _request(self, path, method='GET', params=None):
         url = urljoin(f'https://{self.base_url}', path)
 
-        response = self.session.request(
-            method, url, headers=self.headers, params=params
-        )
+        try:
+            response = self.session.request(
+                method, url, headers=self.headers, params=params
+            )
+        except SSLError as error:
+            raise AkamaiSSLError(error)
 
         if response.ok:
             return response.json()
