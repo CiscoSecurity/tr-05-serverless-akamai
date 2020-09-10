@@ -5,7 +5,7 @@ from unittest.mock import MagicMock
 from authlib.jose import jwt
 from pytest import fixture
 
-from api.errors import PERMISSION_DENIED
+from api.errors import PERMISSION_DENIED, UNKNOWN
 from app import app
 
 
@@ -123,6 +123,16 @@ def akamai_response_network_lists(secret_key):
                     'uniqueId': 'C',
                     'name': 'C',
                     'list': ['2.2.2.2']
+                },
+                {
+                    'uniqueId': 'D',
+                    'name': 'D',
+                    'list': ['2.2.2.2']
+                },
+                {
+                    'uniqueId': 'F',
+                    'name': 'F',
+                    'list': ['1.1.1.1']
                 }
             ]
         }
@@ -162,9 +172,51 @@ def unauthorized_creds_expected_payload():
 
 
 @fixture(scope='module')
+def sslerror_expected_payload(route):
+    data = {'status': 'failure'} if route.endswith('/trigger') else {}
+    return {
+        'data': data,
+        'errors': [
+            {
+                'code': UNKNOWN,
+                'message': 'Unable to verify SSL certificate:'
+                           ' Self signed certificate',
+                'type': 'fatal'
+            }
+        ]
+    }
+
+
+@fixture(scope='module')
 def respond_observables_expected_payload():
     return {
         "data": [
+            {
+                "categories": [
+                    "Akamai"
+                ],
+                "description": "Add IP to Network List",
+                "id": "akamai-add-to-network-list",
+                "query-params": {
+                    "network_list_id": "C",
+                    "observable_type": "ip",
+                    "observable_value": "1.1.1.1"
+                },
+                "title": "Add to C"
+            },
+            {
+                "categories": [
+                    "Akamai"
+                ],
+                "description": "Add IP to Network List",
+                "id": "akamai-add-to-network-list",
+                "query-params": {
+                    "network_list_id": "D",
+                    "observable_type": "ip",
+                    "observable_value": "1.1.1.1"
+                },
+                "title": "Add to D"
+            },
             {
                 "categories": [
                     "Akamai"
@@ -182,14 +234,14 @@ def respond_observables_expected_payload():
                 "categories": [
                     "Akamai"
                 ],
-                "description": "Add IP to Network List",
-                "id": "akamai-add-to-network-list",
+                "description": "Remove IP from Network List",
+                "id": "akamai-remove-from-network-list",
                 "query-params": {
-                    "network_list_id": "C",
+                    "network_list_id": "F",
                     "observable_type": "ip",
                     "observable_value": "1.1.1.1"
                 },
-                "title": "Add to C"
+                "title": "Remove from F"
             }
         ]
     }

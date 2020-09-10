@@ -80,6 +80,8 @@ def respond_observables():
             else:
                 actions.append(add_to(observable, network_list))
 
+    actions.sort(key=lambda item: item['title'])
+
     return jsonify_data(actions)
 
 
