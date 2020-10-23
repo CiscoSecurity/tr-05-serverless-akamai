@@ -5,7 +5,7 @@ from unittest.mock import MagicMock
 from authlib.jose import jwt
 from pytest import fixture
 
-from api.errors import PERMISSION_DENIED, UNKNOWN
+from api.errors import PERMISSION_DENIED, UNKNOWN, AUTH_ERROR
 from app import app
 
 
@@ -51,7 +51,8 @@ def invalid_jwt(valid_jwt):
 
     def jwt_encode(d: dict) -> str:
         from authlib.common.encoding import json_dumps, urlsafe_b64encode
-        return urlsafe_b64encode(json_dumps(d).encode('ascii')).decode('ascii')
+        return urlsafe_b64encode(json_dumps(d).encode('ascii')).decode(
+            'ascii')
 
     payload = jwt_decode(payload)
 
@@ -61,6 +62,24 @@ def invalid_jwt(valid_jwt):
     payload = jwt_encode(payload)
 
     return '.'.join([header, payload, signature])
+
+
+@fixture(scope='session')
+def wrong_jwt_structure():
+    return 'wrong_jwt_structure'
+
+
+@fixture(scope='session')
+def wrong_payload_structure_jwt(client):
+    header = {'alg': 'HS256'}
+
+    payload = {
+        'clientToken': 'xxx',
+    }
+
+    secret_key = client.application.secret_key
+
+    return jwt.encode(header, payload, secret_key).decode('ascii')
 
 
 @fixture(scope='session')
@@ -87,7 +106,7 @@ def akamai_api_response_mock(status_code, text=None, json_=None):
 @fixture(scope='session')
 def akamai_response_unauthorized_creds(secret_key):
     return akamai_api_response_mock(
-        HTTPStatus.FORBIDDEN,
+        HTTPStatus.UNAUTHORIZED,
         json_=lambda: {'detail': 'Error: Bad API key'}
     )
 
@@ -140,34 +159,36 @@ def akamai_response_network_lists(secret_key):
 
 
 @fixture(scope='module')
-def invalid_jwt_expected_payload(route):
-    data = {}
-    if route.endswith('/trigger'):
-        data = {'status': 'failure'}
+def authorization_errors_expected_payload(route):
+    data = {'status': 'failure'} if route.endswith('/trigger') else {}
 
-    return {
-        'errors': [
-            {
-                'code': PERMISSION_DENIED,
-                'message': 'Invalid Authorization Bearer JWT.',
-                'type': 'fatal'}
-        ],
-        'data': data
-    }
+    def _make_payload_message(message):
+        return {
+            'errors': [
+                {
+                    'code': AUTH_ERROR,
+                    'message': f'Authorization failed: {message}',
+                    'type': 'fatal'}
+            ],
+            'data': data
+        }
+
+    return _make_payload_message
 
 
 @fixture(scope='module')
-def unauthorized_creds_expected_payload():
+def unauthorized_creds_expected_payload(route):
+    data = {'status': 'failure'} if route.endswith('/trigger') else {}
     return {
         'errors': [
             {
-                'code': PERMISSION_DENIED,
-                'message': 'Unexpected response from Akamai:'
+                'code': AUTH_ERROR,
+                'message': 'Authorization failed:'
                            ' Error: Bad API key',
                 'type': 'fatal'
             }
         ],
-        'data': {}
+        'data': data
     }
 
 

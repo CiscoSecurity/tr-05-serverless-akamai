@@ -256,7 +256,7 @@ header set to `Bearer <JWT>`.
 
 ```json
 {
-  "baseURL": "<AKAMAI_BASE_URL>",
+  "baseUrl": "<AKAMAI_BASE_URL>",
   "accessToken": "<AKAMAI_ACCESS_TOKEN>",
   "clientToken": "<AKAMAI_CLIENT_TOKEN>",
   "clientSecret": "<AKAMAI_CLIENT_SECRET>"

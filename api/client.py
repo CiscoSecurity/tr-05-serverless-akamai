@@ -7,10 +7,9 @@ from requests.exceptions import SSLError
 
 from api.errors import (
     CriticalAkamaiResponseError,
-
-    AkamaiSSLError)
-
-NOT_CRITICAL_ERRORS = (HTTPStatus.BAD_REQUEST, HTTPStatus.NOT_FOUND)
+    AuthorizationError,
+    AkamaiSSLError
+)
 
 
 class AkamaiClient:
@@ -58,6 +57,12 @@ class AkamaiClient:
             )
         except SSLError as error:
             raise AkamaiSSLError(error)
+
+        # catch wrong accessToken, clientToken or clientSecret.
+        if response.status_code == HTTPStatus.UNAUTHORIZED:
+            raise AuthorizationError(
+                response.json().get('detail') or response.text
+            )
 
         if response.ok:
             return response.json()
