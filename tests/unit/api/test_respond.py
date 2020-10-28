@@ -4,9 +4,9 @@ from unittest.mock import patch, MagicMock
 
 from pytest import fixture
 from requests import Session
-from requests.exceptions import SSLError
+from requests.exceptions import SSLError, ConnectionError
 
-from api.errors import INVALID_ARGUMENT
+from api.errors import INVALID_ARGUMENT, AUTH_ERROR
 from api.respond import ADD_ACTION_ID, REMOVE_ACTION_ID
 from .utils import headers, check_akamai_request
 
@@ -117,20 +117,87 @@ def test_respond_call_with_missed_secret_key(
     )
 
 
-def test_respond_call_with_unauthorized_creds(
+def test_health_call_with_unauthorized_access_token(
         route, client, valid_jwt, valid_json,
         akamai_response_unauthorized_creds,
         unauthorized_creds_expected_payload,
 ):
     with patch.object(Session, 'request') as request_mock:
-        request_mock.return_value = akamai_response_unauthorized_creds
+        request_mock.return_value = akamai_response_unauthorized_creds(
+            HTTPStatus.UNAUTHORIZED, 'Invalid authorization access token'
+        )
 
         response = client.post(
             route, headers=headers(valid_jwt), json=valid_json
         )
 
         assert response.status_code == HTTPStatus.OK
-        assert response.json == unauthorized_creds_expected_payload
+        assert response.json == unauthorized_creds_expected_payload(
+            AUTH_ERROR,
+            'Authorization failed: Invalid authorization access token'
+        )
+
+
+def test_health_call_with_unauthorized_client_token(
+        route, client, valid_jwt, valid_json,
+        akamai_response_unauthorized_creds,
+        unauthorized_creds_expected_payload,
+):
+    with patch.object(Session, 'request') as request_mock:
+        request_mock.return_value = akamai_response_unauthorized_creds(
+            HTTPStatus.BAD_REQUEST, 'Invalid authorization client token'
+        )
+
+        response = client.post(
+            route, headers=headers(valid_jwt), json=valid_json
+        )
+
+        assert response.status_code == HTTPStatus.OK
+        assert response.json == unauthorized_creds_expected_payload(
+            INVALID_ARGUMENT,
+            'Unexpected response from Akamai: '
+            'Invalid authorization client token'
+        )
+
+
+def test_health_call_with_unauthorized_signature(
+        route, client, valid_jwt, valid_json,
+        akamai_response_unauthorized_creds,
+        unauthorized_creds_expected_payload,
+):
+    with patch.object(Session, 'request') as request_mock:
+        request_mock.return_value = akamai_response_unauthorized_creds(
+            HTTPStatus.UNAUTHORIZED, 'The signature does not match'
+        )
+
+        response = client.post(
+            route, headers=headers(valid_jwt), json=valid_json
+        )
+
+        assert response.status_code == HTTPStatus.OK
+        assert response.json == unauthorized_creds_expected_payload(
+            AUTH_ERROR,
+            'Authorization failed: The signature does not match'
+        )
+
+
+def test_health_call_with_unauthorized_base_url(
+        route, client, valid_jwt, valid_json,
+        unauthorized_creds_expected_payload,
+):
+    with patch.object(Session, 'request') as request_mock:
+        request_mock.side_effect = ConnectionError
+
+        response = client.post(
+            route, headers=headers(valid_jwt), json=valid_json
+        )
+
+        assert response.status_code == HTTPStatus.OK
+        assert response.json == unauthorized_creds_expected_payload(
+            AUTH_ERROR,
+            'Authorization failed: Unable to connect Akamai, '
+            'validate the configured baseUrl: xxx'
+        )
 
 
 @fixture(scope='module')

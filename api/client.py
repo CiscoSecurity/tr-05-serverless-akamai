@@ -3,7 +3,7 @@ from urllib.parse import urljoin
 
 import requests
 from akamai.edgegrid import EdgeGridAuth
-from requests.exceptions import SSLError
+from requests.exceptions import SSLError, ConnectionError
 
 from api.errors import (
     CriticalAkamaiResponseError,
@@ -57,8 +57,13 @@ class AkamaiClient:
             )
         except SSLError as error:
             raise AkamaiSSLError(error)
+        except ConnectionError:
+            raise AuthorizationError(
+                f'Unable to connect Akamai, validate '
+                f'the configured baseUrl: {self.base_url}'
+            )
 
-        # catch wrong accessToken, clientToken or clientSecret.
+        # catch wrong accessToken or clientSecret.
         if response.status_code == HTTPStatus.UNAUTHORIZED:
             raise AuthorizationError(
                 response.json().get('detail') or response.text

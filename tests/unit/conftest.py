@@ -5,7 +5,7 @@ from unittest.mock import MagicMock
 from authlib.jose import jwt
 from pytest import fixture
 
-from api.errors import PERMISSION_DENIED, UNKNOWN, AUTH_ERROR
+from api.errors import UNKNOWN, AUTH_ERROR
 from app import app
 
 
@@ -105,10 +105,12 @@ def akamai_api_response_mock(status_code, text=None, json_=None):
 
 @fixture(scope='session')
 def akamai_response_unauthorized_creds(secret_key):
-    return akamai_api_response_mock(
-        HTTPStatus.UNAUTHORIZED,
-        json_=lambda: {'detail': 'Error: Bad API key'}
-    )
+    def _make_response(code, message):
+        return akamai_api_response_mock(
+            code,
+            json_=lambda: {'detail': f'{message}'}
+        )
+    return _make_response
 
 
 @fixture(scope='session')
@@ -179,17 +181,19 @@ def authorization_errors_expected_payload(route):
 @fixture(scope='module')
 def unauthorized_creds_expected_payload(route):
     data = {'status': 'failure'} if route.endswith('/trigger') else {}
-    return {
-        'errors': [
-            {
-                'code': AUTH_ERROR,
-                'message': 'Authorization failed:'
-                           ' Error: Bad API key',
-                'type': 'fatal'
-            }
-        ],
-        'data': data
-    }
+
+    def _make_payload_message(code, message):
+        return {
+            'errors': [
+                {
+                    'code': code,
+                    'message': f'{message}',
+                    'type': 'fatal'
+                }
+            ],
+            'data': data
+        }
+    return _make_payload_message
 
 
 @fixture(scope='module')
