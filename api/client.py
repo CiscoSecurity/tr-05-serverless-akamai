@@ -8,7 +8,8 @@ from requests.exceptions import SSLError, ConnectionError
 from api.errors import (
     CriticalAkamaiResponseError,
     AuthorizationError,
-    AkamaiSSLError
+    AkamaiSSLError,
+    AkamaiConnectionError
 )
 
 
@@ -58,12 +59,8 @@ class AkamaiClient:
         except SSLError as error:
             raise AkamaiSSLError(error)
         except ConnectionError:
-            raise AuthorizationError(
-                f'Unable to connect Akamai, validate '
-                f'the configured baseUrl: {self.base_url}'
-            )
+            raise AkamaiConnectionError(self.base_url)
 
-        # catch wrong accessToken or clientSecret.
         if response.status_code == HTTPStatus.UNAUTHORIZED:
             raise AuthorizationError(
                 response.json().get('detail') or response.text

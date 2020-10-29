@@ -8,6 +8,7 @@ UNAUTHORIZED = 'unauthorized'
 NOT_FOUND = 'not found'
 UNAVAILABLE = 'unavailable'
 AUTH_ERROR = 'authorization error'
+CONNECTION_ERROR = 'connection error'
 
 
 class TRFormattedError(Exception):
@@ -47,6 +48,14 @@ class AkamaiSSLError(TRFormattedError):
         super().__init__(
             UNKNOWN,
             f'Unable to verify SSL certificate: {message}'
+        )
+
+
+class AkamaiConnectionError(TRFormattedError):
+    def __init__(self, url):
+        super().__init__(
+            CONNECTION_ERROR,
+            f'Unable to connect Akamai, validate the configured baseUrl: {url}'
         )
 
 

@@ -4,9 +4,9 @@ from unittest.mock import patch, MagicMock
 
 from pytest import fixture
 from requests import Session
-from requests.exceptions import SSLError, ConnectionError
+from requests.exceptions import SSLError
 
-from api.errors import INVALID_ARGUMENT, AUTH_ERROR
+from api.errors import INVALID_ARGUMENT
 from api.respond import ADD_ACTION_ID, REMOVE_ACTION_ID
 from .utils import headers, check_akamai_request
 
@@ -22,185 +22,6 @@ def route(request):
 
 
 @fixture(scope='module')
-def valid_json(route):
-    if route.endswith('/observables'):
-        return [{'type': 'ip', 'value': '1.1.1.1'}]
-
-    if route.endswith('/trigger'):
-        return {'action-id': ADD_ACTION_ID,
-                'observable_type': 'ip',
-                'observable_value': '1.1.1.1',
-                'network_list_id': 'nli'}
-
-
-def test_respond_call_with_authorization_header_failure(
-        route, client, valid_json,
-        authorization_errors_expected_payload
-):
-    response = client.post(route, json=valid_json)
-
-    assert response.status_code == HTTPStatus.OK
-    assert response.json == authorization_errors_expected_payload(
-        'Authorization header is missing'
-    )
-
-
-def test_respond_call_with_wrong_authorization_type(
-        route, client, valid_jwt, valid_json,
-        authorization_errors_expected_payload
-):
-    response = client.post(
-        route, json=valid_json,
-        headers=headers(valid_jwt, auth_type='wrong_type'),
-    )
-
-    assert response.status_code == HTTPStatus.OK
-    assert response.json == authorization_errors_expected_payload(
-        'Wrong authorization type'
-    )
-
-
-def test_respond_call_with_wrong_jwt_structure(
-        route, client, wrong_jwt_structure, valid_json,
-        authorization_errors_expected_payload
-):
-    response = client.post(
-        route, headers=headers(wrong_jwt_structure), json=valid_json
-    )
-
-    assert response.status_code == HTTPStatus.OK
-    assert response.json == authorization_errors_expected_payload(
-        'Wrong JWT structure'
-    )
-
-
-def test_respond_call_with_jwt_encoded_by_wrong_key(
-        route, client, invalid_jwt, valid_json,
-        authorization_errors_expected_payload
-):
-    response = client.post(
-        route, headers=headers(invalid_jwt), json=valid_json
-    )
-
-    assert response.status_code == HTTPStatus.OK
-    assert response.json == authorization_errors_expected_payload(
-        'Failed to decode JWT with provided key'
-    )
-
-
-def test_respond_call_with_wrong_jwt_payload_structure(
-        route, client, wrong_payload_structure_jwt, valid_json,
-        authorization_errors_expected_payload
-):
-    response = client.post(
-        route, headers=headers(wrong_payload_structure_jwt), json=valid_json
-    )
-
-    assert response.status_code == HTTPStatus.OK
-    assert response.json == authorization_errors_expected_payload(
-        'Wrong JWT payload structure'
-    )
-
-
-def test_respond_call_with_missed_secret_key(
-        route, client, valid_jwt, valid_json,
-        authorization_errors_expected_payload
-):
-    right_secret_key = client.application.secret_key
-    client.application.secret_key = None
-    response = client.post(route, headers=headers(valid_jwt), json=valid_json)
-    client.application.secret_key = right_secret_key
-
-    assert response.status_code == HTTPStatus.OK
-    assert response.json == authorization_errors_expected_payload(
-        '<SECRET_KEY> is missing'
-    )
-
-
-def test_health_call_with_unauthorized_access_token(
-        route, client, valid_jwt, valid_json,
-        akamai_response_unauthorized_creds,
-        unauthorized_creds_expected_payload,
-):
-    with patch.object(Session, 'request') as request_mock:
-        request_mock.return_value = akamai_response_unauthorized_creds(
-            HTTPStatus.UNAUTHORIZED, 'Invalid authorization access token'
-        )
-
-        response = client.post(
-            route, headers=headers(valid_jwt), json=valid_json
-        )
-
-        assert response.status_code == HTTPStatus.OK
-        assert response.json == unauthorized_creds_expected_payload(
-            AUTH_ERROR,
-            'Authorization failed: Invalid authorization access token'
-        )
-
-
-def test_health_call_with_unauthorized_client_token(
-        route, client, valid_jwt, valid_json,
-        akamai_response_unauthorized_creds,
-        unauthorized_creds_expected_payload,
-):
-    with patch.object(Session, 'request') as request_mock:
-        request_mock.return_value = akamai_response_unauthorized_creds(
-            HTTPStatus.BAD_REQUEST, 'Invalid authorization client token'
-        )
-
-        response = client.post(
-            route, headers=headers(valid_jwt), json=valid_json
-        )
-
-        assert response.status_code == HTTPStatus.OK
-        assert response.json == unauthorized_creds_expected_payload(
-            INVALID_ARGUMENT,
-            'Unexpected response from Akamai: '
-            'Invalid authorization client token'
-        )
-
-
-def test_health_call_with_unauthorized_signature(
-        route, client, valid_jwt, valid_json,
-        akamai_response_unauthorized_creds,
-        unauthorized_creds_expected_payload,
-):
-    with patch.object(Session, 'request') as request_mock:
-        request_mock.return_value = akamai_response_unauthorized_creds(
-            HTTPStatus.UNAUTHORIZED, 'The signature does not match'
-        )
-
-        response = client.post(
-            route, headers=headers(valid_jwt), json=valid_json
-        )
-
-        assert response.status_code == HTTPStatus.OK
-        assert response.json == unauthorized_creds_expected_payload(
-            AUTH_ERROR,
-            'Authorization failed: The signature does not match'
-        )
-
-
-def test_health_call_with_unauthorized_base_url(
-        route, client, valid_jwt, valid_json,
-        unauthorized_creds_expected_payload,
-):
-    with patch.object(Session, 'request') as request_mock:
-        request_mock.side_effect = ConnectionError
-
-        response = client.post(
-            route, headers=headers(valid_jwt), json=valid_json
-        )
-
-        assert response.status_code == HTTPStatus.OK
-        assert response.json == unauthorized_creds_expected_payload(
-            AUTH_ERROR,
-            'Authorization failed: Unable to connect Akamai, '
-            'validate the configured baseUrl: xxx'
-        )
-
-
-@fixture(scope='module')
 def invalid_json(route):
     if route.endswith('/observables'):
         return [{'type': 'ip'}]
@@ -213,24 +34,23 @@ def invalid_json(route):
 
 @fixture(scope='module')
 def invalid_json_expected_payload(route):
-    message = None
-    data = {}
-
-    if route.endswith('/observables'):
-        message = '{"0": {"value": ["Missing data for required field."]}}'
-    if route.endswith('/trigger'):
-        message = '{"action-id": ["Missing data for required field."]}'
-        data = {'status': 'failure'}
-
-    return {
+    payload = {
         'errors': [
             {
                 'code': INVALID_ARGUMENT,
-                'message': 'Invalid JSON payload received. ' + message,
+                'message': 'Invalid JSON payload received. ',
                 'type': 'fatal'}
         ],
-        'data': data
     }
+    if route.endswith('/observables'):
+        payload['errors'][0]['message'] += \
+            '{"0": {"value": ["Missing data for required field."]}}'
+    if route.endswith('/trigger'):
+        payload['errors'][0]['message'] += \
+            '{"action-id": ["Missing data for required field."]}'
+        payload.update({'data': {'status': 'failure'}})
+
+    return payload
 
 
 def test_respond_call_with_valid_jwt_but_invalid_json_failure(

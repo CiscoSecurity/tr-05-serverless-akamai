@@ -5,7 +5,8 @@ from unittest.mock import MagicMock
 from authlib.jose import jwt
 from pytest import fixture
 
-from api.errors import UNKNOWN, AUTH_ERROR
+from api.errors import UNKNOWN
+from api.respond import ADD_ACTION_ID
 from app import app
 
 
@@ -41,45 +42,16 @@ def valid_jwt(client):
     return jwt.encode(header, payload, secret_key).decode('ascii')
 
 
-@fixture(scope='session')
-def invalid_jwt(valid_jwt):
-    header, payload, signature = valid_jwt.split('.')
+@fixture(scope='module')
+def valid_json(route):
+    if route.endswith('/observables'):
+        return [{'type': 'ip', 'value': '1.1.1.1'}]
 
-    def jwt_decode(s: str) -> dict:
-        from authlib.common.encoding import urlsafe_b64decode, json_loads
-        return json_loads(urlsafe_b64decode(s.encode('ascii')))
-
-    def jwt_encode(d: dict) -> str:
-        from authlib.common.encoding import json_dumps, urlsafe_b64encode
-        return urlsafe_b64encode(json_dumps(d).encode('ascii')).decode(
-            'ascii')
-
-    payload = jwt_decode(payload)
-
-    # Corrupt the valid JWT by tampering with its payload.
-    payload['superuser'] = True
-
-    payload = jwt_encode(payload)
-
-    return '.'.join([header, payload, signature])
-
-
-@fixture(scope='session')
-def wrong_jwt_structure():
-    return 'wrong_jwt_structure'
-
-
-@fixture(scope='session')
-def wrong_payload_structure_jwt(client):
-    header = {'alg': 'HS256'}
-
-    payload = {
-        'clientToken': 'xxx',
-    }
-
-    secret_key = client.application.secret_key
-
-    return jwt.encode(header, payload, secret_key).decode('ascii')
+    if route.endswith('/trigger'):
+        return {'action-id': ADD_ACTION_ID,
+                'observable_type': 'ip',
+                'observable_value': '1.1.1.1',
+                'network_list_id': 'nli'}
 
 
 @fixture(scope='session')
@@ -161,46 +133,8 @@ def akamai_response_network_lists(secret_key):
 
 
 @fixture(scope='module')
-def authorization_errors_expected_payload(route):
-    data = {'status': 'failure'} if route.endswith('/trigger') else {}
-
-    def _make_payload_message(message):
-        return {
-            'errors': [
-                {
-                    'code': AUTH_ERROR,
-                    'message': f'Authorization failed: {message}',
-                    'type': 'fatal'}
-            ],
-            'data': data
-        }
-
-    return _make_payload_message
-
-
-@fixture(scope='module')
-def unauthorized_creds_expected_payload(route):
-    data = {'status': 'failure'} if route.endswith('/trigger') else {}
-
-    def _make_payload_message(code, message):
-        return {
-            'errors': [
-                {
-                    'code': code,
-                    'message': f'{message}',
-                    'type': 'fatal'
-                }
-            ],
-            'data': data
-        }
-    return _make_payload_message
-
-
-@fixture(scope='module')
 def sslerror_expected_payload(route):
-    data = {'status': 'failure'} if route.endswith('/trigger') else {}
-    return {
-        'data': data,
+    payload = {
         'errors': [
             {
                 'code': UNKNOWN,
@@ -210,6 +144,9 @@ def sslerror_expected_payload(route):
             }
         ]
     }
+    if route.endswith('/trigger'):
+        payload.update({'data': {'status': 'failure'}})
+    return payload
 
 
 @fixture(scope='module')
