@@ -5,7 +5,8 @@ from unittest.mock import MagicMock
 from authlib.jose import jwt
 from pytest import fixture
 
-from api.errors import PERMISSION_DENIED, UNKNOWN
+from api.errors import UNKNOWN
+from api.respond import ADD_ACTION_ID
 from app import app
 
 
@@ -41,26 +42,16 @@ def valid_jwt(client):
     return jwt.encode(header, payload, secret_key).decode('ascii')
 
 
-@fixture(scope='session')
-def invalid_jwt(valid_jwt):
-    header, payload, signature = valid_jwt.split('.')
+@fixture(scope='module')
+def valid_json(route):
+    if route.endswith('/observables'):
+        return [{'type': 'ip', 'value': '1.1.1.1'}]
 
-    def jwt_decode(s: str) -> dict:
-        from authlib.common.encoding import urlsafe_b64decode, json_loads
-        return json_loads(urlsafe_b64decode(s.encode('ascii')))
-
-    def jwt_encode(d: dict) -> str:
-        from authlib.common.encoding import json_dumps, urlsafe_b64encode
-        return urlsafe_b64encode(json_dumps(d).encode('ascii')).decode('ascii')
-
-    payload = jwt_decode(payload)
-
-    # Corrupt the valid JWT by tampering with its payload.
-    payload['superuser'] = True
-
-    payload = jwt_encode(payload)
-
-    return '.'.join([header, payload, signature])
+    if route.endswith('/trigger'):
+        return {'action-id': ADD_ACTION_ID,
+                'observable_type': 'ip',
+                'observable_value': '1.1.1.1',
+                'network_list_id': 'nli'}
 
 
 @fixture(scope='session')
@@ -86,10 +77,12 @@ def akamai_api_response_mock(status_code, text=None, json_=None):
 
 @fixture(scope='session')
 def akamai_response_unauthorized_creds(secret_key):
-    return akamai_api_response_mock(
-        HTTPStatus.FORBIDDEN,
-        json_=lambda: {'detail': 'Error: Bad API key'}
-    )
+    def _make_response(code, message):
+        return akamai_api_response_mock(
+            code,
+            json_=lambda: {'detail': f'{message}'}
+        )
+    return _make_response
 
 
 @fixture(scope='session')
@@ -140,42 +133,8 @@ def akamai_response_network_lists(secret_key):
 
 
 @fixture(scope='module')
-def invalid_jwt_expected_payload(route):
-    data = {}
-    if route.endswith('/trigger'):
-        data = {'status': 'failure'}
-
-    return {
-        'errors': [
-            {
-                'code': PERMISSION_DENIED,
-                'message': 'Invalid Authorization Bearer JWT.',
-                'type': 'fatal'}
-        ],
-        'data': data
-    }
-
-
-@fixture(scope='module')
-def unauthorized_creds_expected_payload():
-    return {
-        'errors': [
-            {
-                'code': PERMISSION_DENIED,
-                'message': 'Unexpected response from Akamai:'
-                           ' Error: Bad API key',
-                'type': 'fatal'
-            }
-        ],
-        'data': {}
-    }
-
-
-@fixture(scope='module')
 def sslerror_expected_payload(route):
-    data = {'status': 'failure'} if route.endswith('/trigger') else {}
-    return {
-        'data': data,
+    payload = {
         'errors': [
             {
                 'code': UNKNOWN,
@@ -185,6 +144,9 @@ def sslerror_expected_payload(route):
             }
         ]
     }
+    if route.endswith('/trigger'):
+        payload.update({'data': {'status': 'failure'}})
+    return payload
 
 
 @fixture(scope='module')

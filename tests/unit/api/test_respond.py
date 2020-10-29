@@ -22,29 +22,6 @@ def route(request):
 
 
 @fixture(scope='module')
-def valid_json(route):
-    if route.endswith('/observables'):
-        return [{'type': 'ip', 'value': '1.1.1.1'}]
-
-    if route.endswith('/trigger'):
-        return {'action-id': ADD_ACTION_ID,
-                'observable_type': 'ip',
-                'observable_value': '1.1.1.1',
-                'network_list_id': 'nli'}
-
-
-def test_respond_call_with_invalid_jwt_failure(
-        route, client, valid_json, invalid_jwt, invalid_jwt_expected_payload
-):
-    response = client.post(
-        route, headers=headers(invalid_jwt), json=valid_json
-    )
-
-    assert response.status_code == HTTPStatus.OK
-    assert response.json == invalid_jwt_expected_payload
-
-
-@fixture(scope='module')
 def invalid_json(route):
     if route.endswith('/observables'):
         return [{'type': 'ip'}]
@@ -57,24 +34,23 @@ def invalid_json(route):
 
 @fixture(scope='module')
 def invalid_json_expected_payload(route):
-    message = None
-    data = {}
-
-    if route.endswith('/observables'):
-        message = '{"0": {"value": ["Missing data for required field."]}}'
-    if route.endswith('/trigger'):
-        message = '{"action-id": ["Missing data for required field."]}'
-        data = {'status': 'failure'}
-
-    return {
+    payload = {
         'errors': [
             {
                 'code': INVALID_ARGUMENT,
-                'message': 'Invalid JSON payload received. ' + message,
+                'message': 'Invalid JSON payload received. ',
                 'type': 'fatal'}
         ],
-        'data': data
     }
+    if route.endswith('/observables'):
+        payload['errors'][0]['message'] += \
+            '{"0": {"value": ["Missing data for required field."]}}'
+    if route.endswith('/trigger'):
+        payload['errors'][0]['message'] += \
+            '{"action-id": ["Missing data for required field."]}'
+        payload.update({'data': {'status': 'failure'}})
+
+    return payload
 
 
 def test_respond_call_with_valid_jwt_but_invalid_json_failure(

@@ -7,6 +7,8 @@ STATE_CONFLICT = 'state conflict'
 UNAUTHORIZED = 'unauthorized'
 NOT_FOUND = 'not found'
 UNAVAILABLE = 'unavailable'
+AUTH_ERROR = 'authorization error'
+CONNECTION_ERROR = 'connection error'
 
 
 class TRFormattedError(Exception):
@@ -23,11 +25,11 @@ class TRFormattedError(Exception):
                 'message': self.message}
 
 
-class InvalidJWTError(TRFormattedError):
-    def __init__(self):
+class AuthorizationError(TRFormattedError):
+    def __init__(self, message):
         super().__init__(
-            PERMISSION_DENIED,
-            'Invalid Authorization Bearer JWT.'
+            AUTH_ERROR,
+            f'Authorization failed: {message}'
         )
 
 
@@ -46,6 +48,14 @@ class AkamaiSSLError(TRFormattedError):
         super().__init__(
             UNKNOWN,
             f'Unable to verify SSL certificate: {message}'
+        )
+
+
+class AkamaiConnectionError(TRFormattedError):
+    def __init__(self, url):
+        super().__init__(
+            CONNECTION_ERROR,
+            f'Unable to connect Akamai, validate the configured baseUrl: {url}'
         )
 
 
