@@ -9,7 +9,9 @@ from api.errors import (
     CriticalAkamaiResponseError,
     AuthorizationError,
     AkamaiSSLError,
-    AkamaiConnectionError
+    AkamaiConnectionError,
+    AUTH_ERROR,
+    INVALID_ARGUMENT
 )
 
 
@@ -51,6 +53,10 @@ class AkamaiClient:
 
     def _request(self, path, method='GET', params=None):
         url = urljoin(f'https://{self.base_url}', path)
+        expected_creds_errors = {
+            HTTPStatus.UNAUTHORIZED: AUTH_ERROR,
+            HTTPStatus.BAD_REQUEST: INVALID_ARGUMENT
+        }
 
         try:
             response = self.session.request(
@@ -61,9 +67,10 @@ class AkamaiClient:
         except ConnectionError:
             raise AkamaiConnectionError(self.base_url)
 
-        if response.status_code == HTTPStatus.UNAUTHORIZED:
+        if response.status_code in expected_creds_errors:
             raise AuthorizationError(
-                response.json().get('detail') or response.text
+                response.json().get('detail') or response.text,
+                code=expected_creds_errors[response.status_code]
             )
 
         if response.ok:

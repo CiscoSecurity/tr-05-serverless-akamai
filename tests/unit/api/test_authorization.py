@@ -221,7 +221,7 @@ def test_call_with_unauthorized_client_token(
         assert response.status_code == HTTPStatus.OK
         assert response.json == unauthorized_creds_expected_payload(
             INVALID_ARGUMENT,
-            'Unexpected response from Akamai: '
+            'Authorization failed: '
             'Invalid authorization client token'
         )
 
@@ -261,5 +261,5 @@ def test_call_with_unauthorized_base_url(
         assert response.status_code == HTTPStatus.OK
         assert response.json == unauthorized_creds_expected_payload(
             CONNECTION_ERROR,
-            'Unable to connect Akamai, validate the configured baseUrl: xxx'
+            'Authorization failed, validate the configured baseUrl: xxx'
         )

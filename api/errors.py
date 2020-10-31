@@ -26,9 +26,9 @@ class TRFormattedError(Exception):
 
 
 class AuthorizationError(TRFormattedError):
-    def __init__(self, message):
+    def __init__(self, message, code=AUTH_ERROR):
         super().__init__(
-            AUTH_ERROR,
+            code,
             f'Authorization failed: {message}'
         )
 
@@ -55,7 +55,7 @@ class AkamaiConnectionError(TRFormattedError):
     def __init__(self, url):
         super().__init__(
             CONNECTION_ERROR,
-            f'Unable to connect Akamai, validate the configured baseUrl: {url}'
+            f'Authorization failed, validate the configured baseUrl: {url}'
         )
 
 
