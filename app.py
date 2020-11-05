@@ -18,6 +18,7 @@ app.register_blueprint(respond_api)
 
 @app.errorhandler(TRFormattedError)
 def handle_tr_formatted_error(error):
+    app.logger.error(error.json)
     add_error(error)
     return jsonify_result()
 
@@ -32,6 +33,7 @@ def handle_error(exception):
     ])
 
     response = jsonify(code=code, message=message, reason=reason)
+    app.logger.error(exception)
     return response, code
 
 
