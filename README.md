@@ -246,6 +246,9 @@ header set to `Bearer <JWT>`.
   original credentials.
   - Triggers an action at the underlying external service.
   - Returns an action result.
+  
+- `POST /version`
+  - Returns the current version of the application.
 
 ### Supported Types of Observables
 
