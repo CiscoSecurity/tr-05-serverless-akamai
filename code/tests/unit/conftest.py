@@ -1,7 +1,5 @@
-from http import HTTPStatus
-
-
 import jwt
+from http import HTTPStatus
 from pytest import fixture
 from unittest.mock import MagicMock
 from tests.unit.mock_for_tests import (

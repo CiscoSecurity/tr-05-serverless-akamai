@@ -15,9 +15,11 @@ def check_akamai_request(
                  params=None, allow_redirects=True),
         call.get(method,
                  uri,
-                 headers={'Accept': 'application/json',
-                          'User-Agent': 'SecureX Threat Response Integrations'
-                                        ' <tr-integrations-support@cisco.com>'},
+                 headers={
+                     'Accept': 'application/json',
+                     'User-Agent': 'SecureX Threat Response Integrations'
+                                   ' <tr-integrations-support@cisco.com>'
+                 },
                  params=params)
 
     ]

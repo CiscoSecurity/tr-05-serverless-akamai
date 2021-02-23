@@ -15,7 +15,6 @@ from api.utils import (
     WRONG_AUDIENCE,
     KID_NOT_FOUND
 )
-
 from api.errors import AUTH_ERROR, INVALID_ARGUMENT, CONNECTION_ERROR
 from .utils import headers
 
