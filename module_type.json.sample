@@ -1,0 +1,69 @@
+{
+    "title": "Akamai",
+    "default_name": "Akamai",
+    "short_description": "Security Center provides answers to essential questions in the most intuitive and simple way ",
+    "description": "Security Center provides answers to essential questions in the most intuitive and simple way without requiring strong analytical skills:\n\n- **Who:**\n\t- Who is attacking my site (based on the attacker’s IP address, session, and reputation)?\n- **Where:**\n\t- From which country is the attack originating?\n- **When:**\n\t- When did the attack begin?\n\t- When did the attack end?\n\t- General attack trends and recurrence.\n- **How:**\n\t- How was my site attacked (attack type, attack vector)?\n\t- How did Akamai’s security product handle the attack?\n\t- How did my origin handle the attack?\n\t- How efficient is my security configuration?\n- **What:**\n\t- What is my security coverage?\n\t- What is newly available in my security product that I am not using?\n\t- What new threats are out there?\n\t- What site was under attack?\n\t- What was the outcome at the Akamai level (alert/deny/other)?\n\t- What was the attack’s impact on overall traffic?\n\t- What was the attack’s impact on my site performance?\n\nThis integration enables you to Add and Remove `IP` or `IPv6` observables to or from Network Lists\n",
+    "tips": "When configuring this integration, you must first gather some information from your Akamai account.\n\n1. Launch [Identity and Access Management](https://control.akamai.com/apps/identity-management/). In Akamai Control Center, click **≡** ⇒ ACCOUNT ADMIN ⇒ **Identity & access**.\n2. From the Users and API Clients tab, click **New API client for me** to open the Customize API client screen.\n3. Click **Quick** to instantly create an API client and a credential for the Akamai APIs you can access. This client’s API access levels, group roles, and permissions are identical to yours. For details about roles and permissions and the level of access, see the [Identity and Access Management](https://control.akamai.com/dl/IDM/IAM/index.html) documentation. **Important:** Do not close the tab without retrieving these values; the API client secret is not retrievable once the tab is closed.\n   - **NOTE :** If you would like to limit the scope of the client you can click **Advanced** the API Client needs READ-WRITE for the Network Lists API\n4. Complete the **Add New Akamai Module** form:\n   - **Module Name** - Leave the default name or enter a name that is meaningful to you\n   -  Enter the **Base URL**, **Access Token**,  **Client Token**, **Client Secret** from the Akamai API Client Credentials\n5. Click **Save** to complete the Akamai module configuration",
+    "external_references": [
+        {
+            "label": "Security Center",
+            "link": "https://learn.akamai.com/en-us/products/cloud_security/security_center.html"
+        },
+        {
+            "label": "Trials",
+            "link": "https://www.akamai.com/us/en/akamai-free-trials.jsp"
+        }
+    ],
+    "configuration_spec": [
+        {
+            "key": "custom_baseUrl",
+            "type": "string",
+            "label": "Base URL",
+            "required": true,
+            "group": "Akamai API Client Credentials"
+        },
+        {
+            "key": "custom_accessToken",
+            "type": "password",
+            "label": "Access Token",
+            "required": true,
+            "group": "Akamai API Client Credentials"
+        },
+        {
+            "key": "custom_clientToken",
+            "type": "password",
+            "label": "Client Token",
+            "required": true,
+            "group": "Akamai API Client Credentials"
+        },
+        {
+            "key": "custom_clientSecret",
+            "type": "password",
+            "label": "Client Secret",
+            "required": true,
+            "group": "Akamai API Client Credentials"
+        }
+    ],
+    "capabilities": [
+        {
+            "id": "health",
+            "description": "Check the health of the Akamai API"
+        },
+        {
+            "id": "respond",
+            "description": "Add or Remove IP and IPv6 addresses to or from Network Lists"
+        }
+    ],
+    "properties": {
+        "supported-apis": [
+            "health",
+            "respond/observables",
+            "respond/trigger"
+        ],
+        "url": "https://ciscohosted.url",
+        "auth-type": "configuration-token",
+        "configuration-token-alg": "RS256",
+        "custom_jwks_host": "visibility.amp.cisco.com"
+    },
+    "logo": "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+PCFET0NUWVBFIHN2ZyBQVUJMSUMgIi0vL1czQy8vRFREIFNWRyAxLjEvL0VOIiAiaHR0cDovL3d3dy53My5vcmcvR3JhcGhpY3MvU1ZHLzEuMS9EVEQvc3ZnMTEuZHRkIj48c3ZnIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIHZpZXdCb3g9IjAgMCAxMDAgMTAwIiB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHhtbDpzcGFjZT0icHJlc2VydmUiIHhtbG5zOnNlcmlmPSJodHRwOi8vd3d3LnNlcmlmLmNvbS8iIHN0eWxlPSJmaWxsLXJ1bGU6ZXZlbm9kZDtjbGlwLXJ1bGU6ZXZlbm9kZDtzdHJva2UtbGluZWpvaW46cm91bmQ7c3Ryb2tlLW1pdGVybGltaXQ6MjsiPjxnIGlkPSJnMTUxOCI+PGcgaWQ9ImcxNTU3Ij48ZyBpZD0iZzE0MDIiPjxwYXRoIGlkPSJwYXRoMTQwNCIgZD0iTTIwLjY5LDY2LjYzNWMtOC4zOTMsLTIuMTggLTE0LjQ5MywtOC44IC0xNC40OTMsLTE2LjYzNWMwLC03LjkxOCA2LjIzLC0xNC41OTMgMTQuNzUxLC0xNi43MTdjMC44NzMsLTAuMjIxIDAuNjQ3LC0wLjY5MSAtMC40MTksLTAuNjkxYy0xMS4zMywwIC0yMC41MjksNy44MDggLTIwLjUyOSwxNy40MDhjLTAsOS42IDkuMTk5LDE3LjQwOCAyMC41MjksMTcuNDA4YzEuMDY2LC0wIDEuMTMsLTAuNTI1IDAuMTYxLC0wLjc3MyIgc3R5bGU9ImZpbGw6IzA5YztmaWxsLXJ1bGU6bm9uemVybzsiLz48L2c+PGcgaWQ9ImcxNDA2Ij48cGF0aCBpZD0icGF0aDE0MDgiIGQ9Ik0xMC4xMDMsNTQuMDU1Yy0wLjA2NCwtMC40NjkgLTAuMDk3LC0wLjkzNyAtMC4wOTcsLTEuNDA3Yy0wLC03LjY0MSA3LjIzMSwtMTMuODIgMTYuMTcyLC0xMy44MmM4LjQ1NywtMCAxMC45NzQsMy4yMjcgMTEuMjk4LDMuMDA2YzAuMzU0LC0wLjIyIC0zLjA2OCwtNi42MiAtMTIuOTc3LC02LjYyYy04Ljk0MSwtMCAtMTYuMTcxLDYuMTc5IC0xNi4xNzEsMTMuODJjLTAsMS43NjYgMC4zODcsMy40NDkgMS4wOTcsNC45OTNjMC4yOSwwLjY2MyAwLjc0MiwwLjY2MyAwLjY3OCwwLjAyOCIgc3R5bGU9ImZpbGw6IzA5YztmaWxsLXJ1bGU6bm9uemVybzsiLz48L2c+PGcgaWQ9ImcxNDEwIj48cGF0aCBpZD0icGF0aDE0MTIiIGQ9Ik0xNi44ODIsNDQuMDk3YzQuMTk1LC0xLjU3MyA5LjQ5LC0xLjYyOCAxNC42ODYsLTAuMDU1YzMuNDg2LDEuMDQ3IDUuNTIxLDIuNTM4IDUuNjgyLDIuNDU1YzAuMjkxLC0wLjExIC0yLjAzNCwtMy4yMjggLTYuMTk5LC00LjU4Yy01LjAzNSwtMS42MjggLTEwLjQ1NywtMC43NzIgLTE0LjM5NSwxLjg3NmMtMC40NTMsMC4zMDQgLTAuMjkxLDAuNDk3IDAuMjI2LDAuMzA0IiBzdHlsZT0iZmlsbDojMDljO2ZpbGwtcnVsZTpub256ZXJvOyIvPjwvZz48ZyBpZD0iZzE0MTQiPjxwYXRoIGlkPSJwYXRoMTQxNiIgZD0iTTEwMCw1MC42MDdjMCwwLjk5MyAtMC45NjgsMS44MjEgLTIuMTMsMS44MjFjLTEuMTYzLC0wIC0yLjEzLC0wLjggLTIuMTMsLTEuODIxYy0wLC0wLjk5MyAwLjkzNSwtMS44MiAyLjEzLC0xLjgyYzEuMTk0LC0wIDIuMTMsMC43OTkgMi4xMywxLjgyIiBzdHlsZT0iZmlsbDojZjkzO2ZpbGwtcnVsZTpub256ZXJvOyIvPjwvZz48cGF0aCBpZD0icGF0aDE0MjAiIGQ9Ik0zMC42NjUsNjAuNzg3bDAuMjU3LDIuNDI4bDQuNDg4LC0wbC0xLjUxOCwtMTQuMDk3bC02LjY4MSwtMGwtOC40NTcsMTQuMDk3bDQuNTgzLC0wbDEuNDIxLC0yLjQyOGw1LjkwNywtMFptLTAuMjI2LC0yLjczMmwtNC4xLDBsMy41MTksLTYuMDk2bDAuMDMxLDBsMC41NSw2LjA5NloiIHN0eWxlPSJmaWxsOiNmOTM7ZmlsbC1ydWxlOm5vbnplcm87Ii8+PHBhdGggaWQ9InBhdGgxNDI0IiBkPSJNNDEuNjM5LDU3LjA2MmwwLjY3OSwwbDMuMTk1LC0zLjcyNGw0LjE2NCwwbC00LjQyMiw0Ljc0NWwyLjcxMiw1LjEzMWwtNC40MjMsMGwtMS43NzYsLTRsLTAuNjQ1LDBsLTEsNGwtMy43NzcsMGwzLjQ4NSwtMTQuMDk2bDMuNzc3LC0wbC0xLjk2OSw3Ljk0NFoiIHN0eWxlPSJmaWxsOiNmOTM7ZmlsbC1ydWxlOm5vbnplcm87Ii8+PGcgaWQ9ImcxNDI4Ij48ZyBpZD0iZzE0MzQiPjxwYXRoIGlkPSJwYXRoMTQzNiIgZD0iTTU1LjU4NCw2My4yMTRsMy43NzcsMGwxLjUxNiwtNi4xNTJjMC44NCwtMy4zOTMgLTAuNjc2LC0zLjgwNiAtNC41NSwtMy44MDZjLTIuNzExLC0wIC01LjMyNywtMC4wMjggLTYuMDY5LDMuMDMzbDMuNzc3LDBjMC4yMjYsLTAuODgyIDAuODcxLC0xLjA3NCAxLjgwOCwtMS4wNzRjMS42NDUsLTAgMS41ODEsMC41NzggMS4zNTUsMS40ODlsLTAuMzg4LDEuNTcybC0wLjE2LDBjLTAuMTMsLTEuMTMxIC0xLjgwOCwtMS4xMDMgLTIuODc0LC0xLjEwM2MtMi43NDMsMCAtNC4zNTgsMC43NDUgLTQuOTM5LDMuMTE3Yy0wLjYxMiwyLjUxIDAuNzc2LDMuMDYyIDMuNDIyLDMuMDYyYzEuMzI0LDAgMy4wOTksLTAuMjIxIDMuNzEzLC0xLjU3MmwwLjEyOSwwbC0wLjUxNywxLjQzNFptLTEuMDY2LC00LjA4MmMxLjIyOCwtMCAyLjAzNSwwLjA4MiAxLjg0LDAuOTA5Yy0wLjI1NywxLjAyMSAtMC43NzQsMS4yMTUgLTIuMzU2LDEuMjE1Yy0wLjU4MSwtMCAtMS42NDUsLTAgLTEuMzg4LC0xLjA3NmMwLjIyNiwtMC45MTEgMC45NjksLTEuMDQ4IDEuOTA0LC0xLjA0OCIgc3R5bGU9ImZpbGw6I2Y5MztmaWxsLXJ1bGU6bm9uemVybzsiLz48L2c+PGcgaWQ9ImcxNDM4Ij48cGF0aCBpZD0icGF0aDE0NDAiIGQ9Ik02Ny4wMTEsNTMuMzM4bC0wLjM1NSwxLjM3OWwwLjE2MiwwYzAuNzQyLC0xLjE1OSAyLjI1OSwtMS40ODkgMy41NSwtMS40ODljMS42MTQsMCAzLjIyOCwwLjI0OCAzLjAwMiwxLjkzMWwwLjE2MSwtMGMwLjU0OCwtMS40MDggMi4yMjgsLTEuOTMxIDMuNjgsLTEuOTMxYzIuNjc5LDAgMy44MDksMC45MzggMy4yMjcsMy4yMjhsLTEuNjc4LDYuNzU4bC0zLjc3NywwbDEuNDIxLC01LjcxYzAuMTkzLC0xLjAyMSAwLjM4OCwtMS43OTQgLTEuMDY2LC0xLjc5NGMtMS40ODUsMCAtMS45NjgsMC44MjggLTIuMjI3LDEuOTA0bC0xLjM4OCw1LjZsLTMuNzc3LDBsMS40ODUsLTUuOTg3YzAuMTk1LC0wLjkwOSAwLjI1OSwtMS41MTcgLTEuMDY0LC0xLjUxN2MtMS41NDksMCAtMi4wMzQsMC43MTggLTIuMzI1LDEuOTA0bC0xLjM4Nyw1LjZsLTMuNzc3LDBsMi40NTMsLTkuODc2bDMuNjgsMFoiIHN0eWxlPSJmaWxsOiNmOTM7ZmlsbC1ydWxlOm5vbnplcm87Ii8+PC9nPjxnIGlkPSJnMTQ0MiI+PHBhdGggaWQ9InBhdGgxNDQ0IiBkPSJNODcuNDQ0LDYzLjIxNGwzLjc3NiwwbDEuNTUsLTYuMTUyYzAuODM5LC0zLjM5MyAtMC42NzksLTMuODA2IC00LjU1MSwtMy44MDZjLTIuNzEyLC0wIC01LjMyOCwtMC4wMjggLTYuMDY5LDMuMDMzbDMuNzc3LDBjMC4yMjUsLTAuODgyIDAuODcxLC0xLjA3NCAxLjgwNywtMS4wNzRjMS42NDcsLTAgMS41ODIsMC41NzggMS4zNTYsMS40ODlsLTAuMzg4LDEuNTcybC0wLjE2MSwwYy0wLjEyOSwtMS4xMzEgLTEuODA3LC0xLjEwMyAtMi44NzMsLTEuMTAzYy0yLjc0NCwwIC00LjM1NywwLjc0NSAtNC45MzgsMy4xMTdjLTAuNjE0LDIuNTEgMC43NzQsMy4wNjIgMy40MiwzLjA2MmMxLjMyNSwwIDMuMSwtMC4yMjEgMy43MTMsLTEuNTcybDAuMTMsMGwtMC41NDksMS40MzRabS0xLjAzMywtNC4wODJjMS4yMjYsLTAgMi4wMzMsMC4wODIgMS44MzksMC45MDljLTAuMjU3LDEuMDIxIC0wLjc3NCwxLjIxNSAtMi4zNTYsMS4yMTVjLTAuNTgxLC0wIC0xLjY0NiwtMCAtMS4zODcsLTEuMDc2YzAuMjI2LC0wLjkxMSAwLjk2OCwtMS4wNDggMS45MDQsLTEuMDQ4IiBzdHlsZT0iZmlsbDojZjkzO2ZpbGwtcnVsZTpub256ZXJvOyIvPjwvZz48L2c+PHBhdGggaWQ9InBhdGgxNDQ4IiBkPSJNOTYuNzA4LDYzLjIxNGwtMy43NzcsMGwyLjQyLC05Ljg3NmwzLjgxLC0wbC0yLjQ1Myw5Ljg3NloiIHN0eWxlPSJmaWxsOiNmOTM7ZmlsbC1ydWxlOm5vbnplcm87Ii8+PC9nPjwvZz48L3N2Zz4="
+}
