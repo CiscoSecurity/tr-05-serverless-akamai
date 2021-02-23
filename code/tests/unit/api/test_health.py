@@ -19,27 +19,30 @@ def route(request):
 
 def test_health_call_with_ssl_error(
         route, client, valid_jwt,
-        sslerror_expected_payload
+        sslerror_expected_payload,
+        get_public_key
 ):
     with patch.object(Session, 'request') as request_mock:
         mock_exception = MagicMock()
         mock_exception.reason.args.__getitem__().verify_message \
             = 'self signed certificate'
-        request_mock.side_effect = SSLError(mock_exception)
+
+        request_mock.side_effect = (get_public_key, SSLError(mock_exception))
 
         response = client.post(
-            route, headers=headers(valid_jwt)
+            route, headers=headers(valid_jwt())
         )
 
         assert response.status_code == HTTPStatus.OK
         assert response.json == sslerror_expected_payload
 
 
-def test_health_call_success(route, client, valid_jwt, akamai_response_ok):
+def test_health_call_success(route, client, valid_jwt,
+                             akamai_response_ok, get_public_key):
     with patch.object(Session, 'request') as request_mock:
-        request_mock.return_value = akamai_response_ok
+        request_mock.side_effect = (get_public_key, akamai_response_ok)
 
-        response = client.post(route, headers=headers(valid_jwt))
+        response = client.post(route, headers=headers(valid_jwt()))
 
         assert response.status_code == HTTPStatus.OK
         assert response.json == {'data': {'status': 'ok'}}

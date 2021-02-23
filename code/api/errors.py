@@ -9,6 +9,7 @@ NOT_FOUND = 'not found'
 UNAVAILABLE = 'unavailable'
 AUTH_ERROR = 'authorization error'
 CONNECTION_ERROR = 'connection error'
+HEALTH_CHECK_ERROR = 'health check failed'
 
 
 class TRFormattedError(Exception):
@@ -79,4 +80,12 @@ class CriticalAkamaiResponseError(TRFormattedError):
             status_code_map.get(response.status_code),
             'Unexpected response from Akamai:'
             f' {response.json().get("detail") or response.text}'
+        )
+
+
+class AkamaiWatchdogError(TRFormattedError):
+    def __init__(self):
+        super().__init__(
+            HEALTH_CHECK_ERROR,
+            'Invalid Health Check'
         )

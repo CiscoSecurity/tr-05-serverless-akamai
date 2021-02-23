@@ -1,9 +1,13 @@
-from datetime import datetime
 from http import HTTPStatus
-from unittest.mock import MagicMock
 
-from authlib.jose import jwt
+
+import jwt
 from pytest import fixture
+from unittest.mock import MagicMock
+from tests.unit.mock_for_tests import (
+    EXPECTED_RESPONSE_OF_JWKS_ENDPOINT, PRIVATE_KEY,
+    RESPONSE_OF_JWKS_ENDPOINT_WITH_WRONG_KEY
+)
 
 from api.errors import UNKNOWN
 from api.respond import ADD_ACTION_ID
@@ -11,14 +15,8 @@ from app import app
 
 
 @fixture(scope='session')
-def secret_key():
-    # Generate some string based on the current datetime.
-    return datetime.utcnow().isoformat()
-
-
-@fixture(scope='session')
-def client(secret_key):
-    app.secret_key = secret_key
+def client():
+    app.rsa_private_key = PRIVATE_KEY
 
     app.testing = True
 
@@ -28,18 +26,35 @@ def client(secret_key):
 
 @fixture(scope='session')
 def valid_jwt(client):
-    header = {'alg': 'HS256'}
+    def _make_jwt(
+            jwks_host='visibility.amp.cisco.com',
+            aud='http://localhost',
+            kid='02B1174234C29F8EFB69911438F597FF3FFEE6B7',
+            wrong_structure=False,
+            missing_jwks_host=False
+    ):
+        payload = {
+            'clientToken': 'xxx',
+            'clientSecret': 'xxx',
+            'accessToken': 'xxx',
+            'baseUrl': 'xxx',
+            'jwks_host': jwks_host,
+            'aud': aud,
+        }
 
-    payload = {
-        'clientToken': 'xxx',
-        'clientSecret': 'xxx',
-        'accessToken': 'xxx',
-        'baseUrl': 'xxx',
-    }
+        if wrong_structure:
+            payload.pop('clientToken')
+        if missing_jwks_host:
+            payload.pop('jwks_host')
 
-    secret_key = client.application.secret_key
+        return jwt.encode(
+            payload, client.application.rsa_private_key, algorithm='RS256',
+            headers={
+                'kid': kid
+            }
+        )
 
-    return jwt.encode(header, payload, secret_key).decode('ascii')
+    return _make_jwt
 
 
 @fixture(scope='module')
@@ -76,7 +91,7 @@ def akamai_api_response_mock(status_code, text=None, json_=None):
 
 
 @fixture(scope='session')
-def akamai_response_unauthorized_creds(secret_key):
+def akamai_response_unauthorized_creds():
     def _make_response(code, message):
         return akamai_api_response_mock(
             code,
@@ -86,7 +101,7 @@ def akamai_response_unauthorized_creds(secret_key):
 
 
 @fixture(scope='session')
-def akamai_response_ok(secret_key):
+def akamai_response_ok():
     return akamai_api_response_mock(
         HTTPStatus.OK,
         json_=lambda: 'OK'
@@ -94,7 +109,23 @@ def akamai_response_ok(secret_key):
 
 
 @fixture(scope='session')
-def akamai_response_network_lists(secret_key):
+def get_public_key():
+    mock_response = MagicMock()
+    payload = EXPECTED_RESPONSE_OF_JWKS_ENDPOINT
+    mock_response.json = lambda: payload
+    return mock_response
+
+
+@fixture(scope='session')
+def get_wrong_public_key():
+    mock_response = MagicMock()
+    payload = RESPONSE_OF_JWKS_ENDPOINT_WITH_WRONG_KEY
+    mock_response.json = lambda: payload
+    return mock_response
+
+
+@fixture(scope='session')
+def akamai_response_network_lists():
     return akamai_api_response_mock(
         HTTPStatus.OK,
         json_=lambda: {

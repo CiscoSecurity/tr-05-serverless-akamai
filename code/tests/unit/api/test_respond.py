@@ -57,7 +57,7 @@ def test_respond_call_with_valid_jwt_but_invalid_json_failure(
         route, client, valid_jwt, invalid_json, invalid_json_expected_payload
 ):
     response = client.post(
-        route, headers=headers(valid_jwt), json=invalid_json
+        route, headers=headers(valid_jwt()), json=invalid_json
     )
 
     assert response.status_code == HTTPStatus.OK
@@ -66,16 +66,17 @@ def test_respond_call_with_valid_jwt_but_invalid_json_failure(
 
 def test_respond_call_with_ssl_error(
         route, client, valid_jwt, valid_json,
-        sslerror_expected_payload
+        sslerror_expected_payload,
+        get_public_key
 ):
     with patch.object(Session, 'request') as request_mock:
         mock_exception = MagicMock()
         mock_exception.reason.args.__getitem__().verify_message \
             = 'self signed certificate'
-        request_mock.side_effect = SSLError(mock_exception)
+        request_mock.side_effect = (get_public_key, SSLError(mock_exception))
 
         response = client.post(
-            route, headers=headers(valid_jwt),
+            route, headers=headers(valid_jwt()),
             json=valid_json
         )
 
@@ -85,13 +86,16 @@ def test_respond_call_with_ssl_error(
 
 def test_respond_observables_call_success(
         client, valid_jwt, akamai_response_network_lists,
-        respond_observables_expected_payload
+        respond_observables_expected_payload,
+        get_public_key
 ):
     with patch.object(Session, 'request') as request_mock:
-        request_mock.return_value = akamai_response_network_lists
+        request_mock.side_effect = (
+            get_public_key, akamai_response_network_lists
+        )
 
         response = client.post(
-            '/respond/observables', headers=headers(valid_jwt),
+            '/respond/observables', headers=headers(valid_jwt()),
             json=[{'type': 'ip', 'value': '1.1.1.1'},
                   {'type': 'domain', 'value': 'cisco.com'}]
         )
@@ -143,7 +147,10 @@ def input_sets():
                  'type': 'fatal'}
             ]
         },
-        lambda r: r.assert_not_called()
+        lambda r: r.assert_called_once_with(
+            method='get',
+            url='https://visibility.amp.cisco.com/.well-known/jwks',
+            params=None, allow_redirects=True)
     )
 
 
@@ -153,13 +160,13 @@ def input_data(request):
 
 
 def test_respond_trigger(
-        input_data, client, valid_jwt, akamai_response_ok
+        input_data, client, valid_jwt, akamai_response_ok, get_public_key
 ):
     with patch.object(Session, 'request') as request_mock:
-        request_mock.return_value = akamai_response_ok
+        request_mock.side_effect = (get_public_key, akamai_response_ok)
 
         response = client.post(
-            '/respond/trigger', headers=headers(valid_jwt),
+            '/respond/trigger', headers=headers(valid_jwt()),
             json=input_data.json
         )
 
