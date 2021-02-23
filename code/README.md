@@ -132,14 +132,14 @@ old `URL` forever.
 Now, the only thing left to do is to follow one of these URLs to navigate 
 to SecureX Threat Response page in your region and create the Akamai
 module using your Lambda's URL and Akamai API key:
-- US: https://securex.us.security.cisco.com/integrations/available/44606d8d-fc66-4ac7-815b-4448e096180f/new
-- EU: https://securex.eu.security.cisco.com/integrations/available/33b8dd88-d126-49f8-afca-3a43dee7896d/new
-- APJC: https://securex.apjc.security.cisco.com/integrations/available/213bd6b5-fd73-44db-9157-3b5156b01530/new  
+- US: https://securex.us.security.cisco.com/integrations/available/30b82760-96ba-4786-89f9-fb06f786d438/new
+- EU: https://securex.eu.security.cisco.com/integrations/available/929c8930-2824-4fbc-9ebb-31ab6b82075b/new
+- APJC: https://securex.apjc.security.cisco.com/integrations/available/35fb6675-5b74-47b4-838e-556491d0a8db/new  
 
 ## Step 3: Testing (Optional)
 
 If you want to test the application you have to install a couple of extra
-dependencies from the [test-requirements.txt](test-requirements.txt) file:
+dependencies from the [requirements.txt](requirements.txt) file:
 ```
 pip install --upgrade --requirement test-requirements.txt
 ```
