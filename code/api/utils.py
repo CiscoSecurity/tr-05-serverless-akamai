@@ -62,15 +62,16 @@ def get_auth_token() -> Union[str, Exception]:
 
 
 def get_jwt() -> Union[dict, Exception]:
-    """Decode Authorization token and validate credentials."""
-    jwt_payload_keys = (
+    """
+    Get authorization token and validate its signature against the public key
+    from /.well-known/jwks endpoint
+    """
+    jwt_payload_keys = {
         'baseUrl',
         'accessToken',
         'clientToken',
-        'clientSecret',
-        'jwks_host',
-        'aud'
-    )
+        'clientSecret'
+    }
 
     expected_errors = {
         AssertionError: WRONG_PAYLOAD_STRUCTURE,
@@ -91,7 +92,7 @@ def get_jwt() -> Union[dict, Exception]:
         payload = jwt.decode(
             token, key=key, algorithms=['RS256'], audience=[aud.rstrip('/')]
         )
-        assert set(jwt_payload_keys) == set(payload)
+        assert payload.keys() >= jwt_payload_keys
         return payload
     except tuple(expected_errors) as error:
         raise AuthorizationError(expected_errors[error.__class__])
