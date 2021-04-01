@@ -7,5 +7,3 @@ pyjwt[crypto]==2.0.1
 flake8==3.9.0
 coverage==5.2.1
 pytest==6.2.2
-
-
