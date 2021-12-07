@@ -1,3 +1,5 @@
+import traceback
+
 from flask import Flask, jsonify
 
 from api.errors import TRFormattedError
@@ -20,7 +22,7 @@ app.register_blueprint(watchdog_api)
 
 @app.errorhandler(TRFormattedError)
 def handle_tr_formatted_error(error):
-    app.logger.error(error.json)
+    app.logger.error(traceback.format_exc())
     add_error(error)
     return jsonify_result()
 
@@ -35,7 +37,7 @@ def handle_error(exception):
     ])
 
     response = jsonify(code=code, message=message, reason=reason)
-    app.logger.error(exception)
+    app.logger.error(traceback.format_exc())
     return response, code
 
 
