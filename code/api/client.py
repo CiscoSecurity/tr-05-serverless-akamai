@@ -3,13 +3,14 @@ from urllib.parse import urljoin
 
 import requests
 from akamai.edgegrid import EdgeGridAuth
-from requests.exceptions import SSLError, ConnectionError
+from requests.exceptions import SSLError, ConnectionError, InvalidURL
 
 from api.errors import (
     CriticalAkamaiResponseError,
     AuthorizationError,
     AkamaiSSLError,
-    AkamaiConnectionError
+    AkamaiConnectionError,
+    INVALID_TOKEN,
 )
 
 
@@ -58,8 +59,10 @@ class AkamaiClient:
             )
         except SSLError as error:
             raise AkamaiSSLError(error)
-        except ConnectionError:
+        except (ConnectionError, InvalidURL):
             raise AkamaiConnectionError(self.base_url)
+        except UnicodeEncodeError:
+            raise AuthorizationError(INVALID_TOKEN)
 
         if response.status_code == HTTPStatus.UNAUTHORIZED:
             raise AuthorizationError(
@@ -68,5 +71,4 @@ class AkamaiClient:
 
         if response.ok:
             return response.json()
-
         raise CriticalAkamaiResponseError(response)
