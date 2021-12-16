@@ -10,6 +10,7 @@ UNAVAILABLE = 'unavailable'
 AUTH_ERROR = 'authorization error'
 CONNECTION_ERROR = 'connection error'
 HEALTH_CHECK_ERROR = 'health check failed'
+INVALID_TOKEN = 'Invalid access or client token'
 
 
 class TRFormattedError(Exception):
