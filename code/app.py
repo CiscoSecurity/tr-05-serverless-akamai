@@ -14,6 +14,8 @@ app = Flask(__name__)
 app.url_map.strict_slashes = False
 app.config.from_object('config.Config')
 
+
+
 app.register_blueprint(health_api)
 app.register_blueprint(respond_api)
 app.register_blueprint(version_api)
